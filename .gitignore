@@ -1,1 +1,28 @@
+# --- ML Framework specific ---
+data/
+work_dirs/
+benchmarks/
+outputs/
+*.pt
+*.pth
+*.onnx
+!*.dvc
+
+# --- Python ---
+__pycache__/
 venv/
+*.pyc
+build/
+dist/
+*.egg-info/
+
+# --- DVC ---
+.dvc/config.local
+.dvc/tmp/
+.dvc/cache/
+
+# --- System/IDEs ---
+.vscode/
+.idea/
+.DS_Store
+.env
