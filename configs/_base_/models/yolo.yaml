@@ -1,0 +1,24 @@
+common:
+  imgsz: 640
+  device: "cuda"
+  conf_threshold: 0.25 # Giá trị mặc định nếu model không có
+
+
+models:
+  yolo8m: 
+    type: "YOLOv8Detector"
+    weights_path: "models/hub/yolov8m.pt"
+    conf_threshold: 0.3
+    params:
+      iou: 0.7
+
+  yolo11m:
+    type: "YOLOv11Detector"
+    weights_path: "models/hub/yolo11m.pt"
+    conf_threshold: 0.25
+    params:
+      iou: 0.45
+
+  yolo26m:
+    type: "YOLOv26Detector"
+    weights_path: "models/hub/yolov26s.pt"
