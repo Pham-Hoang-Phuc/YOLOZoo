@@ -1,0 +1,18 @@
+# Core AI
+ultralytics
+torch
+torchvision
+opencv-python
+numpy
+
+# Config & Registry
+PyYAML
+pydantic
+
+# MLOps
+dvc
+dvc-gdrive
+
+# Utils
+tqdm
+argparse
