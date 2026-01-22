@@ -2,8 +2,4 @@ model:
   type: "YOLO"
   task: "detect"
   weights: "models/hub/yolo11m.pt" 
-  
   dvc_weights_file: "models/hub/yolo11m.pt.dvc"
-
-  overrides:
-    model: "yolo11m.yaml"
