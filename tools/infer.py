@@ -52,8 +52,8 @@ def main():
         imgsz=imgsz,
         device=device,
         save=True,
-        project="runs/detect",
-        name="infer_result"
+        name="infer_result",
+        exist_ok=True
     )
     print(f"Done.")
 
