@@ -1,0 +1,6 @@
+# configs/_base_/models/yolo26m_seg.yaml
+model:
+  type: "YOLO"
+  task: "segment"  # <--- Thay đổi từ 'detect' sang 'segment'
+  weights: "models/hub/yolo26m-seg.pt"
+  dvc_weights_file: "models/hub/yolo26m_seg.pt.dvc"
