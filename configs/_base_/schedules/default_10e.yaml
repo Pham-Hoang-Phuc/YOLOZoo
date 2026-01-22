@@ -6,5 +6,5 @@ train:
   workers: 4
   optimizer: "auto" # YOLOv8/11 tự chọn optimizer
   patience: 50
-  project: "runs/train"
+  project: "train"
   name: "exp"
