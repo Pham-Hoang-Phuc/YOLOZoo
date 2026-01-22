@@ -1,70 +1,61 @@
-import yaml
+# tools/infer.py
 import argparse
-import cv2
 import os
-from src.core.registry import MODELS
-import src.modeling.yolo_wrapper 
+import sys
+from ultralytics import YOLO
+
+# Import
+sys.path.append(os.getcwd())
+from src.core.config_parser import load_config
+from src.core.data_manager import check_and_pull_data # <--- Import thêm hàm này
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--source', type=str, required=True)
+    # weights ở đây là tùy chọn override từ dòng lệnh
+    parser.add_argument('--weights', type=str, default=None) 
     args = parser.parse_args()
 
-    ZOO_CONFIG_PATH = "configs/_base_/models/yolo.yaml"
+    # 1. Load Config
+    cfg = load_config(args.config)
 
-    if not os.path.exists(ZOO_CONFIG_PATH):
-        print(f"Error: Không tìm thấy file cấu hình {ZOO_CONFIG_PATH}")
-        return
-
-    # 1. Đọc file Zoo
-    with open(ZOO_CONFIG_PATH, 'r') as f:
-        cfg = yaml.safe_load(f)
-
-    # Kiểm tra xem nickname có tồn tại trong file không
-    model_nickname = args.config
-    if model_nickname not in cfg['models']:
-        print(f"Error: Model '{model_nickname}' không tồn tại trong {ZOO_CONFIG_PATH}")
-        return
-
-    # Lấy thông tin model cụ thể
-    selected_model_cfg = cfg['models'][model_nickname]
-
-    # 2. Khởi tạo model từ Registry
-    # Lấy class name từ key 'type'
-    model_type = selected_model_cfg['type']
-    model_class = MODELS.get(model_type)
+    # 2. Xác định đường dẫn weights
+    # Ưu tiên 1: Dòng lệnh -> Ưu tiên 2: Config
+    weights_path = args.weights if args.weights else cfg['model']['weights']
     
-    if model_class is None:
-        print(f"Error: Class '{model_type}' chưa được đăng ký trong Registry.")
+    # 3. Logic DVC cho Weights
+    # Nếu dùng weights từ config, kiểm tra xem có file .dvc tương ứng không
+    if not args.weights: 
+        dvc_weights_file = cfg['model'].get('dvc_weights_file')
+        if dvc_weights_file:
+            # Tự động pull nếu file .pt chưa có
+            check_and_pull_data(dvc_weights_file)
+
+    # 4. Load Model
+    print(f"--> Loading model from: {weights_path}")
+    
+    # Kiểm tra lần cuối xem file có tồn tại không để báo lỗi rõ ràng
+    if not os.path.exists(weights_path) and not weights_path.endswith('.pt'):
+        # Nếu path không tồn tại và không phải là alias (yolo11m.pt) thì báo lỗi
+        print(f"Error: Weights file not found at {weights_path}")
         return
 
-    model_instance = model_class(weights_path=selected_model_cfg['weights_path'])
+    model = YOLO(weights_path)
 
-    # 3. Chạy Inference với logic Fallback tham số
-    # Ưu tiên: Thông số trong model > Thông số trong common > Giá trị mặc định
-    imgsz = selected_model_cfg.get('imgsz', cfg.get('common', {}).get('imgsz', 640))
-    conf = selected_model_cfg.get('conf_threshold', cfg.get('common', {}).get('conf_threshold', 0.25))
-    
-    # Lấy các tham số bổ sung nếu có (như iou)
-    extra_params = selected_model_cfg.get('params', {})
+    # 5. Inference
+    imgsz = cfg['train'].get('imgsz', 640)
+    device = cfg['train'].get('device', 'cpu')
 
-    print(f"Running inference: {model_nickname} | Type: {model_type} | Imgsz: {imgsz}")
-
-    results = model_instance.predict(
-        source=args.source, 
+    results = model.predict(
+        source=args.source,
         imgsz=imgsz,
-        conf=conf,
-        **extra_params
+        device=device,
+        save=True,
+        project="runs/detect",
+        name="infer_result"
     )
-
-    # 4. Hiển thị kết quả
-    for r in results:
-        im_array = r.plot() 
-        cv2.imshow(f"ViAIM Zoo - {model_nickname}", im_array)
-        if cv2.waitKey(0) & 0xFF == ord('q'):
-            break
-    cv2.destroyAllWindows()
+    print(f"Done.")
 
 if __name__ == "__main__":
     main()

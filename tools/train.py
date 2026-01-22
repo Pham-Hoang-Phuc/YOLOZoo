@@ -1,51 +1,49 @@
-import yaml
+# tools/train.py
 import argparse
 import os
-from src.core.registry import MODELS
-import src.modeling.yolo_wrapper 
+import sys
+
+# Thêm thư mục hiện tại vào path để import được src
+sys.path.append(os.getcwd())
+
+from src.core.config_parser import load_config
+from src.core.data_manager import check_and_pull_data
+from ultralytics import YOLO
 
 def main():
-    parser = argparse.ArgumentParser(description="Model Zoo Training Script")
-    parser.add_argument('--config', type=str, required=True, help='Model nickname (e.g. yolo8m)')
+    parser = argparse.ArgumentParser(description="YOLO Model Zoo Training")
+    parser.add_argument('--config', type=str, required=True, help='Path to experiment config (e.g., configs/v11/v11_m_demo.yaml)')
     args = parser.parse_args()
 
-    # 1. Load cấu hình Zoo
-    zoo_file = f"configs/_base_/models/{args.config[:4]}.yaml"
+    print(f"--> Loading config from: {args.config}")
+    cfg = load_config(args.config)
     
-    if not os.path.exists(zoo_file):
-        print(f"Error: Config file not found at {zoo_file}")
-        return
+    # 1. Chuẩn bị Dữ liệu (Auto DVC Pull)
+    dataset_cfg = cfg.get('dataset', {})
+    dvc_path = dataset_cfg.get('dvc_path')
+    data_yaml_path = dataset_cfg.get('data_path')
 
-    with open(zoo_file, 'r') as f:
-        zoo_cfg = yaml.safe_load(f)
+    if dvc_path:
+        success = check_and_pull_data(dvc_path)
+        if not success:
+            print("Stop training due to data error.")
+            return
 
-    # 2. Lấy config của model và dataset
-    if args.config not in zoo_cfg['models']:
-        raise KeyError(f"Model {args.config} not found in Zoo.")
-
-    model_cfg = zoo_cfg['models'][args.config]
-    dataset_cfg = zoo_cfg['dataset'] # Lấy block dataset ở ngoài cùng
-
-    # Fallback logic cho các tham số
-    imgsz = model_cfg.get('imgsz', zoo_cfg.get('common', {}).get('imgsz', 640))
-    epochs = dataset_cfg.get('epochs', 10)
-    batch_size = dataset_cfg.get('batch_size', 16)
-
-    # 3. Khởi tạo model qua Registry
-    print(f"[*] Initializing {args.config} for training...")
-    model_class = MODELS.get(model_cfg['type'])
+    # 2. Khởi tạo Model
+    model_cfg = cfg.get('model', {})
+    weights = model_cfg.get('weights', 'yolo11m.pt')
     
-    # Load weights (có thể là pretrained hoặc checkpoint cũ)
-    model_instance = model_class(weights_path=model_cfg['weights_path'])
+    print(f"--> Initializing model with weights: {weights}")
+    model = YOLO(weights) 
 
-    # 4. Kích hoạt training
-    # Truyền các tham số đã parse được vào hàm train của wrapper
-    model_instance.train(
-        data=dataset_cfg['data_path'], # Lưu ý: tham số trong YOLO là 'data', không phải 'data_config'
-        epochs=epochs,
-        imgsz=imgsz,
-        batch=batch_size,
-        device=zoo_cfg.get('common', {}).get('device', 'cuda')
+    # 3. Training
+    train_cfg = cfg.get('train', {})
+    print(f"--> Starting training experiment: {train_cfg.get('name')}")
+    
+    # Lưu ý: Ultralytics cần đường dẫn tuyệt đối hoặc tương đối chuẩn tới data.yaml
+    model.train(
+        data=data_yaml_path,
+        **train_cfg # Unpack các tham số: epochs, batch, imgsz, device...
     )
 
 if __name__ == "__main__":
