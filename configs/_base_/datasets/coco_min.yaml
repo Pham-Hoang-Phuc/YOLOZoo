@@ -1,0 +1,22 @@
+# dataset:
+#   name: "coco_min"
+#   # Đường dẫn tới file data.yaml thực tế mà YOLO cần (đã pull về)
+#   data_path: "data/datasets/coco_min/data.yaml" 
+  
+#   # Đường dẫn DVC (để code tự động pull nếu chưa có)
+#   dvc_path: "data/datasets/coco_min.dvc"
+  
+#   # Số lượng class (quan trọng cho Head)
+#   nc: 80
+#   names: ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light', ...]
+
+
+# configs/_base_/datasets/coco_min.yaml
+dataset:
+  name: "coco_min"
+  
+  # Đường dẫn tới file yaml vừa tạo ở Bước 2
+  data_path: "data/datasets/coco_min/data.yaml" 
+  
+  # Tạm thời để trống hoặc comment dòng này vì mình chưa push data lên DVC
+  # dvc_path: "data/datasets/coco_min.dvc"

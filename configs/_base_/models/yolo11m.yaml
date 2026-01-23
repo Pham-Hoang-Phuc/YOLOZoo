@@ -1,10 +1,5 @@
 model:
-  type: "YOLOv11Detector"
-  weights_path: "models/hub/yolo11m.pt"
-  imgsz: 640
-  conf_threshold: 0.25
-
-dataset:
-  data_path: "data/raw/coco8.yaml" # File config data của ultralytics
-  epochs: 10
-  batch_size: 16
+  type: "YOLO"
+  task: "detect"
+  weights: "models/hub/yolo11m.pt" 
+  dvc_weights_file: "models/hub/yolo11m.pt.dvc"

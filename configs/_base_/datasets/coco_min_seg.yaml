@@ -1,0 +1,4 @@
+# configs/_base_/datasets/coco_min_seg.yaml
+dataset:
+  name: "coco_min_seg"
+  data_path: "data/datasets/coco_min_seg/data.yaml"

@@ -1,0 +1,10 @@
+train:
+  epochs: 10
+  batch: 16
+  imgsz: 640
+  device: "0" # GPU 0, hoặc 'cpu'
+  workers: 4
+  optimizer: "auto" # YOLOv8/11 tự chọn optimizer
+  patience: 50
+  project: "train"
+  name: "exp"

@@ -1,0 +1,11 @@
+# KẾ THỪA: Bạn tái sử dụng lại Dataset và Schedule cũ, chỉ thay file model.
+base:
+  - configs/_base_/datasets/coco_min.yaml   # <-- Dùng lại data cũ
+  - configs/_base_/schedules/default_10e.yaml # <-- Dùng lại setting train cũ
+  - configs/_base_/models/yolo26m.yaml      # <-- Lắp model MỚI vào
+  
+train:
+  epochs: 5
+  batch: 8
+  name: "v26_m_demo_run" # Đổi tên để lưu log ra folder riêng
+  amp: False # Tắt AMP để tránh tải file lạ
