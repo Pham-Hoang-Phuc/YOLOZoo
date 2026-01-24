@@ -1,0 +1,19 @@
+# Sử dụng base image Python 3.9 slim để tối ưu kích thước
+FROM python:3.12-slim
+
+# Cài đặt các thư viện hệ thống thường cần cho OpenCV và các thư viện ML khác
+RUN apt-get update && apt-get install -y libgl1-mesa-glx libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+
+# Thiết lập thư mục làm việc trong container
+WORKDIR /app
+
+# Sao chép tệp requirements.txt và cài đặt các dependencies
+# Việc này được làm riêng để tận dụng Docker layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Sao chép toàn bộ mã nguồn vào thư mục làm việc (đã lọc bởi .dockerignore)
+COPY . .
+
+# Mặc định, container sẽ mở một shell để bạn có thể chạy các lệnh tùy ý
+CMD ["bash"]
