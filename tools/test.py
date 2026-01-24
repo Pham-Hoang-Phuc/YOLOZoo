@@ -1,52 +1,89 @@
-import yaml
 import argparse
 import os
-from src.core.registry import MODELS
-import src.modeling.yolo_wrapper 
+import sys
+
+# Thêm thư mục hiện tại vào path để import được src
+sys.path.append(os.getcwd())
+
+from ultralytics import YOLO
+from src.core.config_parser import load_config
+from src.core.data_manager import check_and_pull_data
 
 def main():
     parser = argparse.ArgumentParser(description="Model Zoo Evaluation Script")
-    parser.add_argument('--config', type=str, required=True, help="Model nickname (e.g. yolo11m)")
+    parser.add_argument('--config', type=str, required=True, help="Path to the experiment config file (e.g., configs/v26/v26_m_demo.yaml)")
+    parser.add_argument('--weights', type=str, default=None, help="Optional: Path to a specific weights file to override the one in the config.")
     args = parser.parse_args()
 
-    # 1. Xác định file Zoo
-    zoo_file = f"configs/_base_/models/{args.config[:4]}.yaml"
+    # 1. Load Config
+    print(f"--> Loading config from: {args.config}")
+    cfg = load_config(args.config)
+
+    # 2. Chuẩn bị Dữ liệu (Auto DVC Pull)
+    dataset_cfg = cfg.get('dataset', {})
+    dvc_path = dataset_cfg.get('dvc_path')
+    data_yaml_path = dataset_cfg.get('data_path')
+
+    if dvc_path:
+        print("--> Checking dataset integrity...")
+        if not check_and_pull_data(dvc_path):
+            print("Error: Could not pull dataset. Aborting evaluation.")
+            return
     
-    if not os.path.exists(zoo_file):
-        print(f"Error: Config file not found at {zoo_file}")
+    # 3. Xác định và chuẩn bị Weights (Auto DVC Pull)
+    model_cfg = cfg.get('model', {})
+    # Ưu tiên 1: Dòng lệnh -> Ưu tiên 2: Config
+    weights_path = args.weights if args.weights else model_cfg.get('weights')
+    
+    if not weights_path:
+        print("Error: No weights specified in command line or config file. Aborting.")
         return
 
-    with open(zoo_file, 'r') as f:
-        zoo_cfg = yaml.safe_load(f)
+    # Nếu dùng weights từ config (không phải từ --weights), kiểm tra DVC
+    if not args.weights:
+        dvc_weights_file = model_cfg.get('dvc_weights_file')
+        if dvc_weights_file:
+            print("--> Checking model weights integrity...")
+            if not check_and_pull_data(dvc_weights_file):
+                print("Error: Could not pull model weights. Aborting evaluation.")
+                return
 
-    # 2. Lấy thông tin model cụ thể
-    if args.config not in zoo_cfg['models']:
-        raise KeyError(f"Model {args.config} not found in Zoo.")
-    
-    model_cfg = zoo_cfg['models'][args.config]
-    
-    # Lấy thông số global nếu model không có
-    imgsz = model_cfg.get('imgsz', zoo_cfg.get('common', {}).get('imgsz', 640))
+    # 4. Khởi tạo Model
+    print(f"--> Loading model from: {weights_path}")
+    if not os.path.exists(weights_path):
+        print(f"Error: Weights file not found at '{weights_path}'. Please ensure the path is correct or run DVC pull.")
+        return
+        
+    model = YOLO(weights_path)
 
-    # 3. Khởi tạo model từ Registry
-    print(f"Loading {args.config} (Type: {model_cfg['type']})...")
-    model_class = MODELS.get(model_cfg['type'])
-    model_instance = model_class(weights_path=model_cfg['weights_path'])
-
-    # 4. Đánh giá (Evaluate)
-    print(f"Evaluating on data: {zoo_cfg['dataset']['data_path']}")
+    # 5. Đánh giá (Evaluate)
+    print(f"--> Evaluating on data: {data_yaml_path}")
     
-    # Gọi hàm val() của Ultralytics thông qua wrapper
-    # Lưu ý: data path nằm ở root của file yaml (zoo_cfg['dataset'])
-    metrics = model_instance.model.val(
-        data=zoo_cfg['dataset']['data_path'],
-        imgsz=imgsz
+    # Lấy các tham số từ config, có giá trị mặc định
+    train_cfg = cfg.get('train', {})
+    imgsz = train_cfg.get('imgsz', 640)
+    device = train_cfg.get('device', 'cpu')
+    name = train_cfg.get('name', 'eval_run') + "_eval"
+
+    metrics = model.val(
+        data=data_yaml_path,
+        imgsz=imgsz,
+        device=device,
+        name=name,
+        exist_ok=True
     )
     
-    print("-" * 30)
-    print(f"Results for {args.config}:")
-    print(f"mAP@50-95: {metrics.box.map}")
-    print(f"mAP@50:    {metrics.box.map50}")
+    print("-" * 40)
+    print(f"Results for {weights_path}:")
+    # In ra các chỉ số chính (cho cả detection và segmentation)
+    if hasattr(metrics, 'box'):
+        print(f"  mAP50-95(B): {metrics.box.map:.4f}")
+        print(f"  mAP50(B):    {metrics.box.map50:.4f}")
+    if hasattr(metrics, 'seg'):
+        print(f"  mAP50-95(M): {metrics.seg.map:.4f}")
+        print(f"  mAP50(M):    {metrics.seg.map50:.4f}")
+    print("-" * 40)
+
 
 if __name__ == "__main__":
     main()
