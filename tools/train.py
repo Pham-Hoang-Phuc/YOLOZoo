@@ -12,7 +12,7 @@ from ultralytics import YOLO
 
 def main():
     parser = argparse.ArgumentParser(description="YOLO Model Zoo Training")
-    parser.add_argument('--config', type=str, required=True, help='Path to experiment config (e.g., configs/v11/v11_m_demo.yaml)')
+    parser.add_argument('-c', '--config', type=str, required=True, help='Path to experiment config (e.g., configs/v11/v11_m_demo.yaml)')
     args = parser.parse_args()
 
     print(f"--> Loading config from: {args.config}")

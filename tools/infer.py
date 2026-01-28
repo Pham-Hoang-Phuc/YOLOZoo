@@ -1,4 +1,3 @@
-# tools/infer.py
 import argparse
 import os
 import sys
@@ -7,14 +6,14 @@ from ultralytics import YOLO
 # Import
 sys.path.append(os.getcwd())
 from src.core.config_parser import load_config
-from src.core.data_manager import check_and_pull_data # <--- Import thêm hàm này
+from src.core.data_manager import check_and_pull_data 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, required=True)
-    parser.add_argument('--source', type=str, required=True)
+    parser.add_argument("-c", "--config", type=str, required=True)
+    parser.add_argument('-s', "--source", type=str, required=True)
     # weights ở đây là tùy chọn override từ dòng lệnh
-    parser.add_argument('--weights', type=str, default=None) 
+    parser.add_argument('-w', "--weights", type=str, default=None) 
     args = parser.parse_args()
 
     # 1. Load Config
