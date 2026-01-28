@@ -5,7 +5,7 @@ base:
 
 train:
   epochs: 10
-  batch: 4
+  batch: 6 
   imgsz: 640
-  name: "v26n_custom"
+  name: "v26n_train"
   amp: False
