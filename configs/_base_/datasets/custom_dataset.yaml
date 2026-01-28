@@ -1,0 +1,3 @@
+dataset:
+  name: "custom_dataset"
+  data_path: "data/custom_dataset/data.yaml"

@@ -1,0 +1,6 @@
+# configs/_base_/models/yolo26m.yaml
+model:
+  type: "YOLO"
+  task: "detect"
+  weights: "models/hub/yolo26n.pt"
+  dvc_weights_file: "models/hub/yolo26n.pt.dvc"

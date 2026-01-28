@@ -1,0 +1,11 @@
+base:
+  - configs/_base_/datasets/custom_dataset.yaml
+  - configs/_base_/models/yolo26n.yaml
+  - configs/_base_/schedules/default_10e.yaml
+
+train:
+  epochs: 10
+  batch: 4
+  imgsz: 640
+  name: "v26n_custom"
+  amp: False
