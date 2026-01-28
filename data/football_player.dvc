@@ -1,0 +1,6 @@
+outs:
+- md5: 9e3e9052d84bdaae60c0c89ff92b5a4d.dir
+  size: 23909144
+  nfiles: 749
+  hash: md5
+  path: football_player
