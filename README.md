@@ -52,10 +52,10 @@ Cấu hình DVC remote (chỉ cần lần đầu):
 
 **Ví dụ:** Huấn luyện model `yolo26m` với cấu hình demo.
 ```bash
-python tools/train.py -c configs/v26/v26_m_demo.yaml
+python tools/train.py -c configs/v26/v26m_train_custom.yaml
 ```
-- **Tự động tải dữ liệu**: Script sẽ tự động kiểm tra và `dvc pull` bộ dữ liệu `coco_min` nếu nó chưa tồn tại.
-- **Kết quả**: Kết quả sẽ được lưu vào thư mục `runs/detect/train/v26_m_demo_run/`.
+- **Tự động tải dữ liệu**: Script sẽ tự động kiểm tra và `dvc pull` bộ dữ liệu `football_player` nếu nó chưa tồn tại.
+- **Kết quả**: Kết quả sẽ được lưu vào thư mục `runs/detect/train/v26n_custom/`.
 
 ### 3. Suy luận (Inference)
 
