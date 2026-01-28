@@ -3,6 +3,7 @@ data/
 work_dirs/
 benchmarks/
 outputs/
+runs/
 *.pt
 *.pth
 *.onnx
