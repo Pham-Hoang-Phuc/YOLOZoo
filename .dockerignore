@@ -1,0 +1,26 @@
+# Git and DVC
+.git/
+.dvc/
+.dvcignore
+.gitignore
+
+# Data, models, and run artifacts
+data/
+models/
+runs/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE and local configs
+.vscode/
+.idea/
+
+# Docker files
+docker/
+Dockerfile
+docker-compose.yaml
+
+# Documentation
+*.md

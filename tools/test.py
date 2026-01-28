@@ -11,8 +11,8 @@ from src.core.data_manager import check_and_pull_data
 
 def main():
     parser = argparse.ArgumentParser(description="Model Zoo Evaluation Script")
-    parser.add_argument('--config', type=str, required=True, help="Path to the experiment config file (e.g., configs/v26/v26_m_demo.yaml)")
-    parser.add_argument('--weights', type=str, default=None, help="Optional: Path to a specific weights file to override the one in the config.")
+    parser.add_argument('-c', '--config', type=str, required=True, help="Path to the experiment config file (e.g., configs/v26/v26_m_demo.yaml)")
+    parser.add_argument('-w', '--weights', type=str, default=None, help="Optional: Path to a specific weights file to override the one in the config.")
     args = parser.parse_args()
 
     # 1. Load Config

@@ -7,7 +7,7 @@
 - **Cấu hình động (Dynamic Configuration)**: Kế thừa và ghi đè các file cấu hình YAML để dễ dàng tạo và quản lý các thử nghiệm (experiment).
 - **Quản lý dữ liệu với DVC**: Tự động tải xuống (pull) các bộ dữ liệu và trọng số mô hình cần thiết khi chạy, giúp đồng bộ môi trường giữa các thành viên.
 - **Kiến trúc module hóa**: Dễ dàng mở rộng, đăng ký thêm các model hoặc wrapper mới thông qua `Registry`.
-- **Giao diện dòng lệnh (CLI)**: Cung cấp các script tiện ích để thực hiện các tác vụ phổ biến: `train`, `infer`, `test`, `export`.
+- **Giao diện dòng lệnh (CLI)**: Cung cấp các script tiện ích để thực hiện các tác vụ phổ biến: `train`, `infer`, `test`, `export` với các đối số được rút gọn.
 - **Tích hợp sẵn các model**: Bao gồm các model `yolo11m`, `yolo26m` cho phát hiện vật thể và `yolo26m-seg` cho phân vùng ảnh.
 
 ---
@@ -34,6 +34,8 @@
 
 ## 🚀 Bắt đầu nhanh
 
+Phần này hướng dẫn cách sử dụng các script trong thư mục `tools`. Các lệnh đều hỗ trợ cả phiên bản đối số đầy đủ (ví dụ: `--config`) và viết tắt (ví dụ: `-c`).
+
 ### 1. Cài đặt môi trường
 
 Cài đặt các thư viện cần thiết:
@@ -50,10 +52,10 @@ Cấu hình DVC remote (chỉ cần lần đầu):
 
 **Ví dụ:** Huấn luyện model `yolo26m` với cấu hình demo.
 ```bash
-python tools/train.py --config configs/v26/v26_m_demo.yaml
+python tools/train.py -c configs/v26/v26m_train_custom.yaml
 ```
-- **Tự động tải dữ liệu**: Script sẽ tự động kiểm tra và `dvc pull` bộ dữ liệu `coco_min` nếu nó chưa tồn tại.
-- **Kết quả**: Kết quả sẽ được lưu vào thư mục `runs/detect/train/v26_m_demo_run/`.
+- **Tự động tải dữ liệu**: Script sẽ tự động kiểm tra và `dvc pull` bộ dữ liệu `football_player` nếu nó chưa tồn tại.
+- **Kết quả**: Kết quả sẽ được lưu vào thư mục `runs/detect/train/v26n_custom/`.
 
 ### 3. Suy luận (Inference)
 
@@ -61,12 +63,12 @@ Sử dụng `tools/infer.py` để chạy dự đoán trên một ảnh hoặc v
 
 **Ví dụ:** Chạy inference với model `yolo11m` trên ảnh `dog_and_bike.jpeg`.
 ```bash
-python tools/infer.py --config configs/v11/v11_m_demo.yaml --source data/raw/dog_and_bike.jpeg
+python tools/infer.py -c configs/v11/v11_m_demo.yaml -s data/raw/dog_and_bike.jpeg
 ```
 - **Tự động tải trọng số**: Script sẽ tự động `dvc pull` file `yolo11m.pt` nếu nó chưa có sẵn.
-- **Tùy chọn trọng số**: Bạn có thể chỉ định một file trọng số khác (ví dụ, kết quả từ quá trình training) bằng cờ `--weights`:
+- **Tùy chọn trọng số**: Bạn có thể chỉ định một file trọng số khác (ví dụ, kết quả từ quá trình training) bằng cờ `-w` (hoặc `--weights`):
   ```bash
-  python tools/infer.py --config configs/v11/v11_m_demo.yaml --source data/raw/dog_and_bike.jpeg --weights runs/detect/train/v26_m_demo_run/weights/best.pt
+  python tools/infer.py -c configs/v11/v11_m_demo.yaml -s data/raw/dog_and_bike.jpeg -w runs/detect/train/v26_m_demo_run/weights/best.pt
   ```
 - **Kết quả**: Ảnh output sẽ được lưu trong `runs/detect/infer_result/`.
 
@@ -76,11 +78,11 @@ Sử dụng `tools/test.py` để đánh giá hiệu năng (mAP) của một mod
 
 **Ví dụ:** Đánh giá model theo cấu hình `v11_m_demo.yaml`.
 ```bash
-python tools/test.py --config configs/v11/v11_m_demo.yaml
+python tools/test.py -c configs/v11/v11_m_demo.yaml
 ```
-- **Tùy chọn trọng số**: Bạn có thể đánh giá một file trọng số cụ thể (thay vì file được chỉ định trong config) bằng cờ `--weights`:
+- **Tùy chọn trọng số**: Bạn có thể đánh giá một file trọng số cụ thể (thay vì file được chỉ định trong config) bằng cờ `-w` (hoặc `--weights`):
   ```bash
-  python tools/test.py --config configs/v11/v11_m_demo.yaml --weights path/to/your/custom/weights.pt
+  python tools/test.py -c configs/v11/v11_m_demo.yaml -w path/to/your/custom/weights.pt
   ```
 - **Kết quả**: Các chỉ số mAP sẽ được in ra màn hình và lưu vào thư mục `runs/detect/eval_run_eval/`.
 
@@ -90,11 +92,11 @@ Sử dụng `tools/export.py` để chuyển đổi trọng số `.pt` sang các
 
 **Ví dụ:** Xuất model theo cấu hình `v26_m_demo.yaml` sang định dạng ONNX.
 ```bash
-python tools/export.py --config configs/v26/v26_m_demo.yaml --format onnx
+python tools/export.py -c configs/v26/v26_m_demo.yaml -f onnx
 ```
-- **Tùy chọn trọng số**: Tương tự như các script khác, bạn có thể chỉ định một file trọng số cụ thể với cờ `--weights`:
+- **Tùy chọn trọng số**: Tương tự như các script khác, bạn có thể chỉ định một file trọng số cụ thể với cờ `-w` (hoặc `--weights`):
   ```bash
-  python tools/export.py --config configs/v26/v26_m_demo.yaml --weights path/to/your/weights.pt --format onnx
+  python tools/export.py -c configs/v26/v26_m_demo.yaml -w path/to/your/weights.pt -f onnx
   ```
 - **Kết quả**: File đã xuất (ví dụ `.onnx`) sẽ được tạo ra trong cùng thư mục với file trọng số đầu vào.
 
