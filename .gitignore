@@ -1,5 +1,7 @@
 # --- ML Framework specific ---
-data/
+data/**
+!data/**/
+!data/**/*.dvc
 work_dirs/
 benchmarks/
 outputs/
