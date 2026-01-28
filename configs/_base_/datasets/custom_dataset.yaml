@@ -1,3 +1,4 @@
 dataset:
   name: "custom_dataset"
-  data_path: "data/custom_dataset/data.yaml"
+  data_path: "data/football_player/data.yaml"
+  dvc_path: "data/football_player.dvc"
